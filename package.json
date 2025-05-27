@@ -1,0 +1,31 @@
+{
+  "name": "coesia-chatbot",
+  "description": "ChatBot for Coesia Group, Built with <3 by Antostarwars (Backend) and TheRealDaltron (Frontend)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "Antostarwars, TheRealDaltron",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "openai": "^4.96.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ceccaa/ProgettoBCC25.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ceccaa/ProgettoBCC25/issues"
+  },
+  "homepage": "https://github.com/Ceccaa/ProgettoBCC25#readme"
+}
