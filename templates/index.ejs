@@ -1,325 +1,485 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>D-ID Streaming POC</title>
-    <!-- added google fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;700&display=swap" rel="stylesheet" />
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoAvatar - Riciclo Intelligente</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #7459fe; --secondary: #41d9a5; --dark: #2c3e50; --light: #f8f9fa; }
+    body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%); min-height: 100vh; padding-bottom: 50px; }
 
-    <style>
-      .peerConnectionState-new {
-        color: cornflowerblue;
-      }
-      .peerConnectionState-connecting {
-        color: orange;
-      }
-      .peerConnectionState-connected {
-        color: green;
-      }
-      .peerConnectionState-disconnected,
-      .peerConnectionState-closed,
-      .peerConnectionState-failed {
-        color: red;
-      }
+    /* Stili esistenti per gli stati della connessione, ICE e segnalazione */
+    .peerConnectionState-new { color: cornflowerblue; }
+    .peerConnectionState-connecting { color: orange; }
+    .peerConnectionState-connected { color: green; }
+    .peerConnectionState-disconnected,
+    .peerConnectionState-closed,
+    .peerConnectionState-failed { color: red; }
 
-      .iceConnectionState-new {
-        color: cornflowerblue;
-      }
-      .iceConnectionState-checking {
-        color: orange;
-      }
-      .iceConnectionState-connected,
-      .iceConnectionState-completed {
-        color: green;
-      }
-      .peerConnectionState-disconnected,
-      .peerConnectionState-closed,
-      .peerConnectionState-failed {
-        color: red;
-      }
+    .iceConnectionState-new { color: cornflowerblue; }
+    .iceConnectionState-checking { color: orange; }
+    .iceConnectionState-connected,
+    .iceConnectionState-completed { color: green; }
+    .peerConnectionState-disconnected,
+    .peerConnectionState-closed,
+    .peerConnectionState-failed { color: red; }
 
-      .iceGatheringState-new {
-        color: cornflowerblue;
-      }
-      .iceGatheringState-gathering {
-        color: orange;
-      }
-      .iceGatheringState-complete {
-        color: black;
-      }
+    .iceGatheringState-new { color: cornflowerblue; }
+    .iceGatheringState-gathering { color: orange; }
+    .iceGatheringState-complete { color: black; }
 
-      .signalingState-stable {
-        color: green;
-      }
-      .signalingState-have-local-offer,
-      .signalingState-have-remote-offer,
-      .signalingState-have-local-pranswer,
-      .signalingState-have-remote-pranswer {
-        color: cornflowerblue;
-      }
-      .signalingState-closed {
-        color: red;
-      }
+    .signalingState-stable { color: green; }
+    .signalingState-have-local-offer,
+    .signalingState-have-remote-offer,
+    .signalingState-have-local-pranswer,
+    .signalingState-have-remote-pranswer { color: cornflowerblue; }
+    .signalingState-closed { color: red; }
 
-      .streamingState-streaming {
-        color: green;
-      }
+    .streamingState-streaming { color: green; }
+    .streamingState-empty { color: grey; }
 
-      .streamingState-empty {
-        color: grey;
-      }
+    .streamEvent-started { color: green; }
+    .streamEvent-done { color: orange; }
+    .streamEvent-ready { color: green; }
+    .streamEvent-error { color: red; }
+    .streamEvent-dont-care { color: gray; }
 
-      .streamEvent-started {
-        color: green;
-      }
+    /* Nuovi stili per la pagina */
+    body * {
+      font-family: 'Mulish', sans-serif;
+      text-align: center;
+    }
 
-      .streamEvent-done {
-        color: orange;
-      }
+    #content {
+      width: 820px;
+      position: relative;
+      margin: 0 auto;
+    }
 
-      .streamEvent-ready {
-        color: green;
-      }
+    #buttons {
+      clear: both;
+      padding: 0 0 0 0;
+      text-align: center;
+    }
 
-      .streamEvent-error {
-        color: red;
-      }
+    button {
+      padding: 10px 20px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+      margin: 0 5px;
+      background-color: #7459fe;
+      color: #fff;
+    }
 
-      .streamEvent-dont-care {
-        color: gray;
-      }
+    button:hover {
+      background-color: #9480ff;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
 
-      /* added css from here */
+    #status {
+      clear: both;
+      padding: 20px 0 0 0;
+      text-align: left;
+      display: inline-block;
+      zoom: 1;
+      line-height: 140%;
+      font-size: 15px;
+    }
 
-      body * {
-        font-family: 'Mulish', sans-serif;
-        text-align: center;
-      }
+    #status div {
+      padding-bottom: 10px;
+    }
 
-      #content {
-        width: 820px;
-        position: relative;
-        margin: 0 auto;
-      }
+    #video-wrapper {
+      background: url("/assets/images/bg.png");
+      height: 500px;
+      background-position: top;
+    }
 
-      #buttons {
-        clear: both;
-        padding: 0 0 0 0;
-        text-align: center;
-      }
+    #video-wrapper div {
+      position: relative;
+      height: 100%;
+      width: 400px;
+      margin: 0 auto;
+    }
 
-      button {
-        padding: 10px 20px;
-        border-radius: 5px;
-        border: none;
-        font-size: 16px;
-        margin: 0 5px;
-        background-color: #7459fe;
-        color: #fff;
-      }
+    #videoBot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      /*border:1px solid;*/
+      border-radius: 50%;
+      background-color: #fff;
 
-      button:hover {
-        background-color: #9480ff;
-        cursor: pointer;
-        transition: all 0.2s ease-out;
-      }
+      object-fit: cover;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-image: url("/assets/images/alex_v2_idle_image.png");
+    }
 
-      #status {
-        clear: both;
-        padding: 20px 0 0 0;
-        text-align: left;
-        display: inline-block;
-        zoom: 1;
-        line-height: 140%;
-        font-size: 15px;
-      }
+    /* Container for camera and button */
+    .camera-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 40px auto;
+    }
 
-      #status div {
-        padding-bottom: 10px;
-      }
+    /* Square video container - NO border-radius */
+    .cameraGrid {
+      width: 320px;
+      height: 240px;
+      background-color: #000;
+      overflow: hidden;
+      border: 2px solid #ccc;
+      position: relative;
+    }
 
-      #video-wrapper {
-        background: url("/assets/images/bg.png");
-        height: 500px;
-        background-position: top;
-      }
+    /* Result image after snapshot */
+    .cameraResult {
+      margin-top: 20px;
+      max-width: 320px;
+      text-align: center;
+    }
 
-      #video-wrapper div {
-        position: relative;
-        height: 100%;
-        width: 400px;
-        margin: 0 auto;
-      }
+    .cameraResult img {
+      width: 100%;
+      height: auto;
+      border: 2px solid #ccc;
+      box-sizing: border-box;
+      display: block;
+      margin: 0 auto;
+    }
 
-      #videoBot {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        /*border:1px solid;*/
-        border-radius: 50%;
-        background-color: #fff;
+    /* Button style */
+    .snapshot-button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #7459fe;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
 
-        object-fit: cover;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-        background-image: url("/assets/images/alex_v2_idle_image.png");
-      }
+    .snapshot-button:hover {
+      background-color: #9480ff;
+    }
 
-      /* Container for camera and button */
-      .camera-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin: 40px auto;
-      }
+    /* Stili per la modale */
+    .modal-video-container {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 aspect ratio */
+    }
 
-      /* Square video container - NO border-radius */
-      .cameraGrid {
-        width: 320px;
-        height: 240px;
-        background-color: #000;
-        overflow: hidden;
-        border: 2px solid #ccc;
-        position: relative;
-      }
+    #modalAvatarVideo {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      display: none;
+    }
 
-      /* Result image after snapshot */
-      .cameraResult {
-        margin-top: 20px;
-        max-width: 320px;
-        text-align: center;
-      }
+    .spinner-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
 
-      .cameraResult img {
-        width: 100%;
-        height: auto;
-        border: 2px solid #ccc;
-        box-sizing: border-box;
-        display: block;
-        margin: 0 auto;
-      }
-
-      /* Button style */
-      .snapshot-button {
-        margin-top: 15px;
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: #7459fe;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      .snapshot-button:hover {
-        background-color: #9480ff;
-      }
-
-
-    </style>
-  </head>
-
-  <body>
-  
-    <!-- webcam association -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js "></script>
-
-    <!-- Webcam Section -->
-    <div class="camera-container">
-      <div id="my_camera" class="cameraGrid"></div>
-      <button onclick="take_snapshot()" class="snapshot-button">Take Snapshot</button>
-      <div id="my_result" class="cameraResult"></div>
-      <button onclick="submitQuestion()" class="snapshot-button">Analyze & Recycle Info</button>
+    /* Fine nuovi stili */
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">EcoAvatar</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#hero">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#steps">Come Funziona</a></li>
+          <li class="nav-item"><a class="nav-link" href="#camera-section">Fotocamera</a></li>
+          <li class="nav-item"><a class="nav-link" href="#bins">Raccolta</a></li>
+        </ul>
+      </div>
     </div>
+  </nav>
 
-    <script language="JavaScript">
-      Webcam.attach( '#my_camera' );
-      
-      function take_snapshot() {
-        Webcam.snap(function(data_uri) {
-          document.getElementById('my_result').innerHTML = '<img src="' + data_uri + '" />';
-        });
-      }
+  <!-- Hero Section -->
+  <section id="hero" class="py-5">
+    <div class="container text-center">
+      <h1 class="display-4">EcoAvatar</h1>
+      <p class="lead">La tua guida interattiva per il riciclo intelligente</p>
+      <a href="#steps" class="btn btn-primary">Scopri di più</a>
+    </div>
+  </section>
 
-      
-      async function submitQuestion() {
-        const imageElement = document.querySelector("#my_result img");
-
-
-        if (!imageElement) {
-          alert("Please take a photo first.");
-          return;
-        }
-
-        const imageData = imageElement.src; // This should be a data URI like data:image/png;base64,...
-        const fixedPrompt = "What material is the object in the image made of, and where should I recycle it?";
-
-        console.log("Image Data URI:", imageData);
-
-        try {
-          const response = await fetch("/ask", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ question: fixedPrompt, imageData })
-          });
-
-          const data = await response.json();
-
-          if (data.answer) {
-            displayChatMessage("Bot", data.answer);
-          }
-
-        } catch (error) {
-          console.error("Error:", error);
-          alert("Failed to get response from AI.");
-        }
-      }
-    </script>
-
-
-    <!-- adde "id=content" -->
-    <div id="content">
-      <!-- added "id=video-wrapper" -->
-      <div id="video-wrapper">
-        <div>
-          <video id="videoBot" width="400" height="400" autoplay loop style="opacity: 1"></video>
-          <video id="videoBot" width="400" height="400" autoplay style="opacity: 0"></video>
+  <!-- Steps Section -->
+  <section id="steps" class="py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <i class="fas fa-camera fa-3x mb-3" style="color: var(--primary);"></i>
+          <h3>1. Scatta la foto</h3>
+          <p>Cattura un’immagine del materiale da riciclare.</p>
+        </div>
+        <div class="col-md-4">
+          <i class="fas fa-robot fa-3x mb-3" style="color: var(--primary);"></i>
+          <h3>2. Analisi Intelligente</h3>
+          <p>Grazie all’IA, riconosciamo il tipo di materiale.</p>
+        </div>
+        <div class="col-md-4">
+          <i class="fas fa-recycle fa-3x mb-3" style="color: var(--primary);"></i>
+          <h3>3. Ricicla</h3>
+          <p>Ti guidiamo passo passo su dove smaltirlo e come farlo nel modo corretto.</p>
         </div>
       </div>
-      <br />
+    </div>
+  </section>
 
-      <!-- added div#buttons -->
-      <div id="buttons">
-        <button id="connect-button" type="button">Connect</button>
-        <button id="start-button" type="button">Start</button>
-        <button id="destroy-button" type="button">Destroy</button>
-      </div>
+  <!-- Camera Section (IMPORTANTE: deve avere #my_camera e #my_result) -->
+  <section id="camera-section" class="py-5">
+    <div class="container">
+      <h2 class="mb-4">Scatta una Foto del Materiale</h2>
+      <div class="camera-container">
+        <!-- Contenitore Video Webcam -->
+        <div id="my_camera" class="cameraGrid"></div>
 
-      <!-- added div#status -->
-      <div id="status">
-        <!-- removed the wrapping <div> tags -->
-        ICE gathering status: <label id="ice-gathering-status-label"></label><br />
-        ICE status: <label id="ice-status-label"></label><br />
-        Peer connection status: <label id="peer-status-label"></label><br />
-        Signaling status: <label id="signaling-status-label"></label><br />
-        Last stream event: <label id="stream-event-label"></label><br />
-        Streaming status: <label id="streaming-status-label"></label><br />
+        <!-- Bottone per scattare lo snapshot -->
+        <button class="snapshot-button" onclick="take_snapshot()">Scatta Foto</button>
+
+        <!-- Contenitore per mostrare il risultato dello snapshot -->
+        <div id="my_result" class="cameraResult"></div>
+
+        <!-- Bottone per inviare l’immagine al server -->
+        <button class="snapshot-button mt-3" onclick="submitQuestion()">Invia per Analisi</button>
       </div>
     </div>
+  </section>
 
-    <div style="margin-top: 20px;">
-      <form onsubmit="event.preventDefault(); submitQuestion();">
-        <textarea id="questionInput" placeholder="Ask me anything..."></textarea>
-        <button id="askButton" type="submit">Ask</button>
-      </form>
+  <!-- Avatar Response Modal -->
+  <div class="modal fade" id="avatarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">La tua guida al riciclo: Sara</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-video-container">
+            <div class="spinner-container" id="modalSpinner">
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <video id="modalAvatarVideo" playsinline></video>
+          </div>
+        </div>
+      </div>
     </div>
-    
-    <script type="module" src="/assets/scripts/chatbot.js"></script>
-  </body>
+  </div>
+
+  <!-- Bins Section -->
+  <section id="bins" class="py-5 bg-light">
+    <div class="container">
+      <h2 class="mb-4">Dove Buttarlo</h2>
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <i class="fas fa-recycle fa-2x mb-2" style="color: var(--secondary);"></i>
+          <h5>Carta</h5>
+          <p>Raccolta nella plastica blu.</p>
+        </div>
+        <div class="col-md-4 text-center">
+          <i class="fas fa-flask fa-2x mb-2" style="color: var(--secondary);"></i>
+          <h5>Vetro</h5>
+          <p>Raccolta nella campana verde.</p>
+        </div>
+        <div class="col-md-4 text-center">
+          <i class="fas fa-plastic-bottle fa-2x mb-2" style="color: var(--secondary);"></i>
+          <h5>Plastica</h5>
+          <p>Raccolta nella plastica gialla.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-4 bg-dark text-white text-center">
+    <div class="container">
+      <p class="mb-0">&copy; 2025 EcoAvatar. Tutti i diritti riservati.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap & JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js"></script>
+  <script>
+    // Inizializza Webcam
+    Webcam.set({
+      width: 320,
+      height: 240,
+      image_format: 'jpeg',
+      jpeg_quality: 90
+    });
+    // Ora il div #my_camera esiste, puoi agganciare la webcam
+    Webcam.attach('#my_camera');
+
+    // Scatta foto
+    function take_snapshot() {
+      Webcam.snap(function(data_uri) {
+        document.getElementById('my_result').innerHTML = '<img src="' + data_uri + '" class="img-fluid" />';
+      });
+    }
+
+    // Ridimensiona immagine per invio
+    function resizeImage(imgElement, maxWidth) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const originalWidth = imgElement.naturalWidth;
+        const originalHeight = imgElement.naturalHeight;
+        const ratio = maxWidth / originalWidth;
+        const newWidth = maxWidth;
+        const newHeight = originalHeight * ratio;
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(imgElement, 0, 0, newWidth, newHeight);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      });
+    }
+
+    // Mostra modale, invia immagine, ricevi risposta, mostra video avatar
+    async function submitQuestion() {
+      const imageElement = document.querySelector("#my_result img");
+      if (!imageElement) {
+        alert("Per favore scatta una foto prima.");
+        return;
+      }
+      // Mostra modale con spinner
+      const modal = new bootstrap.Modal(document.getElementById('avatarModal'));
+      modal.show();
+      document.getElementById('modalSpinner').style.display = 'flex';
+      const video = document.getElementById('modalAvatarVideo');
+      video.style.display = 'none';
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+
+      try {
+        // Aspetta che l'immagine sia caricata
+        if (!imageElement.complete) {
+          await new Promise((resolve) => { imageElement.onload = resolve; });
+        }
+        // Riduci immagine
+        const resizedData = await resizeImage(imageElement, 800);
+        // Invia a backend
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageData: resizedData })
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Server error: ${errorData.error || response.status}`);
+        }
+        const data = await response.json();
+        if (data.answer) {
+          // Chiedi a D-ID di generare il video
+          await speakWithDID(data.answer, modal, video);
+        } else {
+          alert("Nessuna risposta ricevuta.");
+          modal.hide();
+          resetModal();
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Errore: " + error.message);
+        modal.hide();
+        resetModal();
+      }
+    }
+
+    // Chiamata a D-ID e gestione video nella modale
+    async function speakWithDID(message, modal, video) {
+      try {
+        // Chiedi al backend di generare il video D-ID
+        const response = await fetch('/generate-did-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: message })
+        });
+        if (!response.ok) throw new Error('Errore nella generazione del video');
+        const { talkId } = await response.json();
+        // Polling per stato video
+        const videoUrl = await checkTalkStatus(talkId);
+        // Mostra video nella modale
+        document.getElementById('modalSpinner').style.display = 'none';
+        video.style.display = 'block';
+        video.src = videoUrl;
+        video.volume = 0.7;
+        video.play();
+        video.onended = function() {
+          setTimeout(() => {
+            modal.hide();
+            resetModal();
+          }, 2000);
+        };
+      } catch (error) {
+        alert("Errore nell'animazione dell'avatar: " + error.message);
+        document.getElementById('modalSpinner').style.display = 'none';
+        resetModal();
+      }
+    }
+
+    // Polling stato video D-ID
+    async function checkTalkStatus(talkId, retries = 20, interval = 1500) {
+      for (let i = 0; i < retries; i++) {
+        const response = await fetch(`/talk-status/${talkId}`);
+        const data = await response.json();
+        if (data.status === 'done' && data.result_url) {
+          return data.result_url;
+        } else if (data.status === 'error') {
+          throw new Error('Errore nella generazione del video D-ID');
+        }
+        await new Promise(resolve => setTimeout(resolve, interval));
+      }
+      throw new Error('Timeout nella generazione del video');
+    }
+
+    // Reset modale
+    function resetModal() {
+      document.getElementById('modalSpinner').style.display = 'flex';
+      const video = document.getElementById('modalAvatarVideo');
+      video.style.display = 'none';
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("EcoAvatar is ready!");
+    });
+  </script>
+</body>
 </html>
